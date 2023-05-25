@@ -1,0 +1,54 @@
+name: deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+env:
+  OCI_REGISTRY: ghcr.io
+  DOCKER_IMAGE: gsri-personnels
+  HELM_PACKAGE: gsri-personnels-helm
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔓 Registry
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+        with:
+          registry: ${{ env.OCI_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: 🔨 Sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: 🔨 Version
+        run: build/version/New-ReleaseVersion.ps1
+        shell: pwsh
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: 🔨 Dotnet Tools
+        run: dotnet tool restore
+
+      - name: 📦 Helm chart
+        run: helm package build/helm --version ${{ steps.version.outputs.version }}
+
+      - name: 🚀 Docker image
+        run: dotnet publish -t:PublishContainer
+        env:
+          ContainerRegistry: ${{ env.OCI_REGISTRY }}
+          ContainerRepository: ${{ github.repository }}/${{ env.DOCKER_IMAGE }}
+          ContainerImageTag: ${{ steps.version.outputs.version }}
+          Version: ${{ steps.version.outputs.version }}
+
+      - name: 🚀 Helm chart
+        run: helm push "${HELM_PACKAGE}-${{ steps.version.outputs.version }}.tgz" "oci://${OCI_REGISTRY}/${GITHUB_REPOSITORY@L}"
+
+      - name: 📣 GH Release
+        run: gh release create ${{ steps.version.outputs.version }} --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,0 +1,70 @@
+@page "/joueurs"
+@using Microsoft.EntityFrameworkCore
+
+@inject PersonnelsDbContext PersonnelsDbContext
+@inject ILogger<Competences> Logger
+
+<h1>Compétences</h1>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Pseudonyme</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var joueur in joueurs.OrderBy(_ => _.Pseudonyme))
+    {
+      <tr>
+        <td>
+          <a href="./joueurs/@joueur.Pseudonyme">
+            @joueur.Pseudonyme
+          </a>
+        </td>
+        <td>
+          <input type="button" class="btn btn-danger" value="Supprimer" @onclick="async () => await Supprimer(joueur)" />
+        </td>
+      </tr>
+    }
+  </tbody>
+  <tfoot>
+    <tr>
+      <td>
+        <input type="text" class="form-control" @bind-value="add_name" />
+      </td>
+      <td>
+        <input type="button" class="btn btn-primary" value="Ajouter" @onclick="Ajouter" />
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+@code
+{
+  private Domain.Joueur[] joueurs = [];
+  private string add_name = string.Empty;
+
+  protected override async Task OnInitializedAsync()
+  {
+    joueurs = await PersonnelsDbContext.Joueurs.AsNoTracking().ToArrayAsync(CancellationToken.None);
+  }
+
+  private async Task Ajouter(MouseEventArgs args)
+  {
+    var competence = PersonnelsDbContext.Joueurs.Add(new()
+    {
+      Pseudonyme = add_name,
+    }).Entity;
+    await PersonnelsDbContext.SaveChangesAsync(CancellationToken.None);
+    joueurs = [.. joueurs, competence];
+  }
+
+  private async Task Supprimer(Domain.Joueur competence)
+  {
+    await PersonnelsDbContext.Joueurs
+      .Where(_ => _.Pseudonyme == competence.Pseudonyme)
+      .ExecuteDeleteAsync(CancellationToken.None);
+    joueurs = joueurs.Except([competence]).ToArray();
+  }
+}

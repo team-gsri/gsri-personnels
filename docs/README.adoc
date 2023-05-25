@@ -1,0 +1,24 @@
+= Infrastructure - GSRI Personnels
+
+== Description
+
+This application allows skill and personnel management in our unit.
+
+== Rules and standards
+
+The following documents provide information on rules and standards applying to this project :
+
+* link:../LICENSE[MIT license]
+
+The following documents provide information on rules and standards applying to this organization :
+
+* https://github.com/team-gsri/.github/blob/master/CODE_OF_CONDUCT.md[GSRI Code of conduct]
+* https://github.com/team-gsri/.github/blob/master/SECURITY.md[GSRI Security policy]
+* https://github.com/team-gsri/.github/blob/master/SUPPORT.md[GSRI Support policy]
+* https://github.com/team-gsri/.github/blob/master/CONTRIBUTING.md[GSRI Contribution guide]
+* https://github.com/team-gsri/.github/blob/master/DOCUMENTING.md[GSRI Documentation guide]
+
+== Disclaimer
+This application or website is not affiliated or authorized by Bohemia Interactive a.s. Bohemia Interactive, ARMA, DAYZ and all associated logos and designs are trademarks or registered trademarks of Bohemia Interactive a.s.
+
+The GSRI logo is a trademark of GSRI.

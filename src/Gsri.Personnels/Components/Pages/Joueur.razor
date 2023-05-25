@@ -1,0 +1,73 @@
+@page "/joueurs/{Pseudonyme}"
+@using Microsoft.EntityFrameworkCore
+
+@inject PersonnelsDbContext PersonnelsDbContext
+@inject TimeProvider TimeProvider
+
+<h1>@Pseudonyme</h1>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Competence</th>
+      <th>Statut</th>
+      <th>Expiration</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var competence in competences)
+    {
+      <tr>
+        <td>@competence</td>
+        <td>
+          @if (joueur.Qualifications
+            .Where(_ => _.Competence.Name == competence)
+            .MaxBy(_ => _.Until)
+            ?.IsValid(TimeProvider) ?? false)
+          {
+            <b>🎖️ Qualifié</b>
+          }
+          else
+          {
+            <i>Non</i>
+          }
+
+        </td>
+        <td>
+          @joueur.Qualifications.Where(_ => _.Competence.Name == competence).MaxBy(_ => _.Until)?.Until
+        </td>
+        <td>
+          <input type="button" class="btn btn-primary" value="Qualifier"
+                 @onclick="async () => await Qualifier(competence)" />
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+@code
+{
+  [Parameter] public string Pseudonyme { get; set; } = string.Empty;
+
+  private Domain.Joueur joueur = null!;
+  public string[] competences = [];
+
+  protected override async Task OnInitializedAsync()
+  {
+    joueur = await PersonnelsDbContext.Joueurs
+      .Include("Qualifications.Competence")
+      .FirstAsync(_ => _.Pseudonyme == Pseudonyme);
+
+    competences = await PersonnelsDbContext.Competences.AsNoTracking()
+      .Select(_ => _.Name)
+      .ToArrayAsync(CancellationToken.None);
+  }
+
+  private async Task Qualifier(string competence_name)
+  {
+    var competence = await PersonnelsDbContext.Competences.FirstAsync(_ => _.Name == competence_name);
+    joueur.Qualifier(competence, TimeProvider);
+    await PersonnelsDbContext.SaveChangesAsync(CancellationToken.None);
+  }
+}

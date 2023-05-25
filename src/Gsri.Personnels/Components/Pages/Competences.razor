@@ -1,0 +1,81 @@
+@page "/competences"
+@using Microsoft.EntityFrameworkCore
+
+@inject PersonnelsDbContext PersonnelsDbContext
+@inject ILogger<Competences> Logger
+
+<h1>Compétences</h1>
+
+<form>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Durée (en jours)</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var competence in competences.OrderBy(_ => _.Name))
+      {
+        <tr>
+          <td>
+            @competence.Name
+          </td>
+          <td>
+            @competence.Duree
+          </td>
+          <td>
+            <input type="button" class="btn btn-danger" value="Supprimer"
+                   @onclick="async () => await Supprimer(competence)" />
+          </td>
+        </tr>
+      }
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>
+          <input type="text" class="form-control" @bind-value="add_name" @ref="add_name_ref" />
+        </td>
+        <td>
+          <input type="number" class="form-control" @bind-value="add_duree" />
+        </td>
+        <td>
+          <input type="button" class="btn btn-primary" value="Ajouter" @onclick="Ajouter" />
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</form>
+
+@code
+{
+  private Competence[] competences = [];
+  private int add_duree = 90;
+  private string add_name = string.Empty;
+  private ElementReference add_name_ref;
+
+  protected override async Task OnInitializedAsync()
+  {
+    competences = await PersonnelsDbContext.Competences.AsNoTracking().ToArrayAsync(CancellationToken.None);
+  }
+
+  private async Task Ajouter(MouseEventArgs args)
+  {
+    var competence = PersonnelsDbContext.Competences.Add(new()
+    {
+      Name = add_name,
+      Duree = Duree.Factory(add_duree) ?? throw new InvalidOperationException()
+    }).Entity;
+    await PersonnelsDbContext.SaveChangesAsync(CancellationToken.None);
+    competences = [.. competences, competence];
+    add_name = string.Empty;
+    await add_name_ref.FocusAsync(preventScroll: false);
+  }
+
+  private async Task Supprimer(Competence competence)
+  {
+    await PersonnelsDbContext.Competences.Where(_ => _.Name == competence.Name).ExecuteDeleteAsync(CancellationToken.None);
+    competences = competences.Except([competence]).ToArray();
+  }
+}

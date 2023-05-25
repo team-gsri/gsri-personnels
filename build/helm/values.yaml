@@ -1,0 +1,5 @@
+product:
+  name: gsri-personnels
+
+image:
+  name: ghcr.io/infrastructure-admin-personnels/personnels-docker

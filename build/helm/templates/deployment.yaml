@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.product.name }}-application
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.product.name | quote }}
+    app.kubernetes.io/instance: {{ .Values.product.instance | quote }}
+    app.kubernetes.io/version: {{ splitList "+" .Chart.Version | first | quote }}
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: {{ .Values.product.name | quote }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.product.name }}-application
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.product.name }}-application
+    spec:
+      containers:
+      - image: {{ .Values.image.name }}
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.product.name }}-application
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /storage
+          name: storage
+        env
+      volumes:
+      - name: storage
+        nfs:
+          path: /srv/nfs/app-{{ .Values.product.name }}
+          server: 5.135.158.195

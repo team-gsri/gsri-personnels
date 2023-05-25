@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.product.name }}-application
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.product.name | quote }}
+    app.kubernetes.io/instance: {{ .Values.product.instance | quote }}
+    app.kubernetes.io/version: {{ splitList "+" .Chart.Version | first | quote }}
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: {{ .Values.product.name | quote }}
+spec:
+  rules:
+  - host: admin.gsri.team
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ .Values.product.name }}-application
+            port:
+              number: 8080
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - admin.gsri.team
+    secretName: {{ .Values.product.name }}-application-cert

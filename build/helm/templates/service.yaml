@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.product.name }}-application
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.product.name | quote }}
+    app.kubernetes.io/instance: {{ .Values.product.instance | quote }}
+    app.kubernetes.io/version: {{ splitList "+" .Chart.Version | first | quote }}
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: {{ .Values.product.name | quote }}
+spec:
+  selector:
+    app: {{ .Values.product.name }}-application
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
