@@ -1,1 +1,1 @@
-helm upgrade gsri-personnels oci://ghcr.io/team-gsri/infrastructure-admin-personnels/gsri-personnels-helm --install
+helm upgrade gsri-personnels oci://ghcr.io/team-gsri/gsri-personnels/gsri-personnels-helm --install
