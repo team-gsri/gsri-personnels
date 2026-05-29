@@ -21,7 +21,7 @@ spec:
         app: {{ .Values.product.name }}-application
     spec:
       containers:
-      - image: {{ .Values.image.name }}
+      - image: {{ .Values.image.name }}:{{ splitList "+" .Chart.Version | first }}
         name: application
         imagePullPolicy: Always
         envFrom:
@@ -34,7 +34,7 @@ spec:
         - mountPath: /storage
           name: storage
       initContainers:
-      - image: {{ .Values.image.name }}
+      - image: {{ .Values.image.name }}:{{ splitList "+" .Chart.Version | first }}
         name: migration
         imagePullPolicy: Always
         command:
@@ -42,9 +42,6 @@ spec:
         envFrom:
         - configMapRef:
             name: {{ .Values.product.name }}-application
-        ports:
-        - containerPort: 8080
-          protocol: TCP
         volumeMounts:
         - mountPath: /storage
           name: storage
