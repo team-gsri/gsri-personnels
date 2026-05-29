@@ -22,7 +22,7 @@ namespace Gsri.Personnels.Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.8");
 
-            modelBuilder.Entity("Gsri.Infrastructure.Admin.Personnels.Domain.Competence", b =>
+            modelBuilder.Entity("Gsri.Personnels.Domain.Competence", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -43,7 +43,7 @@ namespace Gsri.Personnels.Database.Migrations
                     b.ToTable("Competences");
                 });
 
-            modelBuilder.Entity("Gsri.Infrastructure.Admin.Personnels.Domain.Joueur", b =>
+            modelBuilder.Entity("Gsri.Personnels.Domain.Joueur", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -61,7 +61,7 @@ namespace Gsri.Personnels.Database.Migrations
                     b.ToTable("Joueurs");
                 });
 
-            modelBuilder.Entity("Gsri.Infrastructure.Admin.Personnels.Domain.Qualification", b =>
+            modelBuilder.Entity("Gsri.Personnels.Domain.Qualification", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -94,15 +94,15 @@ namespace Gsri.Personnels.Database.Migrations
                     b.ToTable("Qualifications");
                 });
 
-            modelBuilder.Entity("Gsri.Infrastructure.Admin.Personnels.Domain.Qualification", b =>
+            modelBuilder.Entity("Gsri.Personnels.Domain.Qualification", b =>
                 {
-                    b.HasOne("Gsri.Infrastructure.Admin.Personnels.Domain.Competence", "Competence")
+                    b.HasOne("Gsri.Personnels.Domain.Competence", "Competence")
                         .WithMany()
                         .HasForeignKey("CompetenceId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Gsri.Infrastructure.Admin.Personnels.Domain.Joueur", "Joueur")
+                    b.HasOne("Gsri.Personnels.Domain.Joueur", "Joueur")
                         .WithMany("Qualifications")
                         .HasForeignKey("JoueurId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -113,7 +113,7 @@ namespace Gsri.Personnels.Database.Migrations
                     b.Navigation("Joueur");
                 });
 
-            modelBuilder.Entity("Gsri.Infrastructure.Admin.Personnels.Domain.Joueur", b =>
+            modelBuilder.Entity("Gsri.Personnels.Domain.Joueur", b =>
                 {
                     b.Navigation("Qualifications");
                 });
