@@ -32,7 +32,6 @@ spec:
         volumeMounts:
         - mountPath: /storage
           name: storage
-        env
       volumes:
       - name: storage
         nfs:
