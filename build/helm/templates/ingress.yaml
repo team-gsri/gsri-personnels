@@ -10,6 +10,9 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: application
     app.kubernetes.io/part-of: {{ .Values.product.name | quote }}
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    external-dns.alpha.kubernetes.io/hostname: admin.gsri.team
 spec:
   rules:
   - host: admin.gsri.team
