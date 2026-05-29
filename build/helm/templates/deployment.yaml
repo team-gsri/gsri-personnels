@@ -27,6 +27,8 @@ spec:
         envFrom:
         - configMapRef:
             name: {{ .Values.product.name }}-application
+        - secretRef:
+            name: {{ .Values.product.name }}-application
         ports:
         - containerPort: 8080
           protocol: TCP
