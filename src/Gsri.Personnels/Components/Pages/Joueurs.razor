@@ -1,5 +1,9 @@
 @page "/joueurs"
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+
+@rendermode InteractiveServer
+@attribute [Authorize]
 
 @inject PersonnelsDbContext PersonnelsDbContext
 @inject ILogger<Competences> Logger

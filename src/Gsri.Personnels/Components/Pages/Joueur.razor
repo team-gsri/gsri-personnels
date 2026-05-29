@@ -1,5 +1,9 @@
 @page "/joueurs/{Pseudonyme}"
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+
+@rendermode InteractiveServer
+@attribute [Authorize]
 
 @inject PersonnelsDbContext PersonnelsDbContext
 @inject TimeProvider TimeProvider

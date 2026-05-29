@@ -6,9 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
     <RootNamespace>Gsri.Personnels</RootNamespace>
+    <UserSecretsId>3f2d2bb4-87d0-4085-8afd-1f625bb1aab4</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNet.Security.OAuth.Discord" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.8">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -19,5 +21,5 @@
   <Target Name="BuildEfCoreMigrationBundle" AfterTargets="Publish">
     <Exec Command="dotnet ef migrations bundle --self-contained -r linux-x64 --output $(PublishUrl)efbundle --force" />
   </Target>
-  
+
 </Project>
