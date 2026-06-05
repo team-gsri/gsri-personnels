@@ -13,22 +13,19 @@
 <table class="table">
   <thead>
     <tr>
-      <th>Competence</th>
-      <th>Statut</th>
-      <th>Expiration</th>
-      <th></th>
+      <th class="col-3">Competence</th>
+      <th class="col-3">Statut</th>
+      <th class="col-3">Expiration</th>
+      <th class="col-3"></th>
     </tr>
   </thead>
   <tbody>
     @foreach (var competence in competences)
     {
       <tr>
-        <td>@competence</td>
+        <td>@competence.Name</td>
         <td>
-          @if (joueur.Qualifications
-            .Where(_ => _.Competence.Name == competence)
-            .MaxBy(_ => _.Until)
-            ?.IsValid(TimeProvider) ?? false)
+          @if (EstQualifie(competence))
           {
             <b>🎖️ Qualifié</b>
           }
@@ -36,10 +33,9 @@
           {
             <i>Non</i>
           }
-
         </td>
         <td>
-          @joueur.Qualifications.Where(_ => _.Competence.Name == competence).MaxBy(_ => _.Until)?.Until
+          @GetQualification(competence)?.Until
         </td>
         <td>
           <input type="button" class="btn btn-primary" value="Qualifier"
@@ -50,28 +46,70 @@
   </tbody>
 </table>
 
+<h2>Historique</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th class="col-3">Date</th>
+      <th class="col-6">Compétence</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var qualification in joueur.Qualifications.OrderByDescending(_ => _.Until))
+    {
+      <tr>
+        <td>
+          @qualification.From
+        </td>
+        <td>
+          @qualification.Competence.Name
+        </td>
+        <td>
+          <input type="button" class="btn btn-danger" value="Supprimer"
+                 @onclick="async () => await Supprimer(qualification)" />
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+
 @code
 {
   [Parameter] public string Pseudonyme { get; set; } = string.Empty;
 
   private Domain.Joueur joueur = null!;
-  public string[] competences = [];
+  private Domain.Competence[] competences = [];
 
   protected override async Task OnInitializedAsync()
   {
+    competences = await PersonnelsDbContext.Competences
+      .ToArrayAsync(CancellationToken.None);
+
     joueur = await PersonnelsDbContext.Joueurs
       .Include("Qualifications.Competence")
       .FirstAsync(_ => _.Pseudonyme == Pseudonyme);
-
-    competences = await PersonnelsDbContext.Competences.AsNoTracking()
-      .Select(_ => _.Name)
-      .ToArrayAsync(CancellationToken.None);
   }
 
-  private async Task Qualifier(string competence_name)
+  private Qualification? GetQualification(Competence competence) => joueur.Qualifications
+    .Where(_ => _.Competence.Name == competence.Name)
+    .MaxBy(_ => _.Until);
+
+  private bool EstQualifie(Competence competence) => GetQualification(competence)?.IsValid(TimeProvider) ?? false;
+
+  private async Task Qualifier(Competence competence)
   {
-    var competence = await PersonnelsDbContext.Competences.FirstAsync(_ => _.Name == competence_name);
     joueur.Qualifier(competence, TimeProvider);
     await PersonnelsDbContext.SaveChangesAsync(CancellationToken.None);
+    StateHasChanged();
+  }
+
+  private async Task Supprimer(Qualification qualification)
+  {
+    joueur.Qualifications.Remove(qualification);
+    await PersonnelsDbContext.SaveChangesAsync(CancellationToken.None);
+    StateHasChanged();
   }
 }

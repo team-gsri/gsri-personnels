@@ -10,8 +10,11 @@ public record Joueur
 
     public void Qualifier(Competence competence, TimeProvider timeProvider)
     {
-        var qualification = GetQualification(competence, timeProvider) ?? Qualification.Factory(this, competence, timeProvider);
-        qualification.Proroger(timeProvider);
+        var today = DateOnly.FromDateTime(timeProvider.GetLocalNow().Date);
+        var qualification = GetQualification(competence, timeProvider);
+        if (qualification?.From == today) { return; }
+
+        qualification = Qualification.Factory(this, competence, timeProvider);
         Qualifications.Add(qualification);
     }
 
@@ -20,7 +23,6 @@ public record Joueur
         .Where(_ => _.Competence.Name == competence.Name)
         .Where(_ => _.IsValid(timeProvider))
         .MaxBy(_ => _.Until);
-
 
     private class EntityTypeConfiguration : IEntityTypeConfiguration<Joueur>
     {

@@ -22,8 +22,7 @@ public record Qualification
 
     public bool IsValid(TimeProvider timeProvider) => Today(timeProvider) is DateOnly today && From <= today && today <= Until;
     private static DateOnly Today(TimeProvider timeProvider) => DateOnly.FromDateTime(timeProvider.GetLocalNow().Date);
-    public void Proroger(TimeProvider timeProvider) => Until = Today(timeProvider).AddDays(Competence.Duree);
-
+    
     private class EntityTypeConfiguration : IEntityTypeConfiguration<Qualification>
     {
         public void Configure(EntityTypeBuilder<Qualification> builder)
