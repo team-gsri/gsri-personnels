@@ -12,8 +12,11 @@
         <div class="top-row px-4">
             @if (username is not "")
             {
-                <span> Bonjour, @username </span>
+                <span> Bonjour @username </span>
             }
+            <span class="px-4">
+                Version @System.Reflection.Assembly.GetEntryAssembly()!.GetName().Version!.ToString(3)
+            </span>
         </div>
 
         <article class="content px-4">
