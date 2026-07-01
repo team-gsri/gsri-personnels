@@ -32,7 +32,6 @@ public record Joueur
             builder.HasKey("Id");
 
             builder.HasIndex(_ => _.Pseudonyme).IsUnique();
-            builder.HasMany(_ => _.Qualifications).WithOne(_ => _.Joueur).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

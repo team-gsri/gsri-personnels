@@ -7,6 +7,7 @@ public record Competence
 {
     public required string Name { get; init; }
     public required Duree Duree { get; init; }
+    public ICollection<Qualification> Qualifications { get; init; } = [];
 
     private class EntityTypeConfiguration : IEntityTypeConfiguration<Competence>
     {
@@ -20,8 +21,6 @@ public record Competence
                 static value => value.Value,
                 static value => Duree.Factory(value)!
             );
-
-            builder.HasMany<Qualification>().WithOne(_ => _.Competence).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

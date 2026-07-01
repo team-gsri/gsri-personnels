@@ -1,4 +1,4 @@
-@page "/joueurs/{Pseudonyme}"
+@page "/competences/{Name}"
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Authorization
 
@@ -8,28 +8,26 @@
 @inject PersonnelsDbContext PersonnelsDbContext
 @inject TimeProvider TimeProvider
 
-<h1>@Pseudonyme</h1>
+<h1>@Name</h1>
 
 <table class="table">
   <thead>
     <tr>
-      <th class="col-3">Competence</th>
+      <th class="col-3">Pseudonyme</th>
       <th class="col-3">Statut</th>
       <th class="col-3">Expiration</th>
       <th class="col-3"></th>
     </tr>
   </thead>
   <tbody>
-    @foreach (var competence in competences)
+    @foreach (var joueur in joueurs)
     {
       <tr>
         <td>
-          <a href="/competences/@competence.Name">
-            @competence.Name
-          </a>
+          <a href="/joueurs/@joueur.Pseudonyme">@joueur.Pseudonyme</a>
         </td>
         <td>
-          @if (GetQualification(competence)?.IsValid(TimeProvider) ?? false)
+          @if (@GetQualification(joueur)?.IsValid(TimeProvider) ?? false)
           {
             <b>🎖️ Qualifié</b>
           }
@@ -39,11 +37,10 @@
           }
         </td>
         <td>
-          @GetQualification(competence)?.Until
+          @GetQualification(joueur)?.Until
         </td>
         <td>
-          <input type="button" class="btn btn-primary" value="Qualifier"
-                 @onclick="async () => await Qualifier(competence)" />
+          <input type="button" class="btn btn-primary" value="Qualifier" @onclick="async () => await Qualifier(joueur)" />
         </td>
       </tr>
     }
@@ -56,19 +53,19 @@
   <thead>
     <tr>
       <th class="col-3">Date</th>
-      <th class="col-6">Compétence</th>
+      <th class="col-6">Joueur</th>
       <th></th>
     </tr>
   </thead>
   <tbody>
-    @foreach (var qualification in joueur.Qualifications.OrderByDescending(_ => _.Until))
+    @foreach (var qualification in competence.Qualifications.OrderByDescending(_ => _.Until))
     {
       <tr>
         <td>
           @qualification.From
         </td>
         <td>
-          @qualification.Competence.Name
+          @qualification.Joueur.Pseudonyme
         </td>
         <td>
           <input type="button" class="btn btn-danger" value="Supprimer"
@@ -82,26 +79,26 @@
 
 @code
 {
-  [Parameter] public string Pseudonyme { get; set; } = string.Empty;
+  [Parameter] public string Name { get; set; } = string.Empty;
 
-  private Domain.Joueur joueur = null!;
-  private Domain.Competence[] competences = [];
+  private Domain.Competence competence = null!;
+  private Domain.Joueur[] joueurs = [];
 
   protected override async Task OnInitializedAsync()
   {
-    joueur = await PersonnelsDbContext.Joueurs
+    competence = await PersonnelsDbContext.Competences
       .Include(_ => _.Qualifications)
-      .FirstAsync(_ => _.Pseudonyme == Pseudonyme);
+      .FirstAsync(_ => _.Name == Name);
 
-    competences = await PersonnelsDbContext.Competences
+    joueurs = await PersonnelsDbContext.Joueurs
       .ToArrayAsync(CancellationToken.None);
   }
 
-  private Qualification? GetQualification(Domain.Competence competence) => joueur.Qualifications
+  private Qualification? GetQualification(Domain.Joueur joueur) => joueur.Qualifications
     .Where(_ => _.Competence.Name == competence.Name)
     .MaxBy(_ => _.Until);
 
-  private async Task Qualifier(Domain.Competence competence)
+  private async Task Qualifier(Domain.Joueur joueur)
   {
     joueur.Qualifier(competence, TimeProvider);
     await PersonnelsDbContext.SaveChangesAsync(CancellationToken.None);
@@ -110,7 +107,7 @@
 
   private async Task Supprimer(Qualification qualification)
   {
-    joueur.Qualifications.Remove(qualification);
+    PersonnelsDbContext.Qualifications.Remove(qualification);
     await PersonnelsDbContext.SaveChangesAsync(CancellationToken.None);
     StateHasChanged();
   }
