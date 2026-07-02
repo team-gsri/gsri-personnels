@@ -10,6 +10,7 @@ namespace Gsri.Personnels;
 
 internal static class SecurityConfiguration
 {
+    public const string ReadWritePolicyName = "ReadWrite";
     private const string DiscordAuthenticationConfiguration = "Authentication:Schemes:Discord";
     private const string WhitelistConfigurationPath = "Authorization:Whitelist";
 
@@ -19,13 +20,22 @@ internal static class SecurityConfiguration
         {
             webApplicationBuilder.Services.AddAuthentication(AddAuthentication).AddCookie().AddDiscord();
             webApplicationBuilder.Services.AddOptions<DiscordAuthenticationOptions>(DiscordAuthenticationDefaults.AuthenticationScheme).BindConfiguration(DiscordAuthenticationConfiguration);
-            webApplicationBuilder.Services.AddAuthorizationBuilder().AddDefaultPolicy("", webApplicationBuilder.WhitelistPolicy);
+            webApplicationBuilder.Services.AddAuthorization(webApplicationBuilder.AddAuthorization);
+            webApplicationBuilder.Services.AddCascadingAuthenticationState();
         }
 
         private string[] Whitelist => webApplicationBuilder.Configuration.GetSection(WhitelistConfigurationPath).Get<string[]>() ?? [];
-        private AuthorizationPolicy WhitelistPolicy => new AuthorizationPolicyBuilder().RequireClaim(ClaimTypes.NameIdentifier, webApplicationBuilder.Whitelist).Build();
 
+        internal void AddAuthorization(AuthorizationOptions options)
+        {
+            options.AddPolicy(ReadWritePolicyName, webApplicationBuilder.ReadWritePolicy);
+            options.DefaultPolicy = options.GetPolicy(ReadWritePolicyName)!;
+        }
+
+        internal void ReadWritePolicy(AuthorizationPolicyBuilder authorizationPolicyBuilder)
+        => authorizationPolicyBuilder.RequireClaim(ClaimTypes.NameIdentifier, webApplicationBuilder.Whitelist);
     }
+
 
     internal static void AddAuthentication(AuthenticationOptions options)
     {
