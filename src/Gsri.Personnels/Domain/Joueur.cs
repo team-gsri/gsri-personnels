@@ -8,6 +8,8 @@ public record Joueur
     public required string Pseudonyme { get; init; }
     public ICollection<Qualification> Qualifications { get; init; } = [];
 
+    public static Joueur? Factory(string pseudonyme) => new() { Pseudonyme = pseudonyme, Qualifications = [] };
+
     public void Qualifier(Competence competence, TimeProvider timeProvider)
     {
         var today = DateOnly.FromDateTime(timeProvider.GetLocalNow().Date);
@@ -33,5 +35,14 @@ public record Joueur
 
             builder.HasIndex(_ => _.Pseudonyme).IsUnique();
         }
+    }
+}
+
+public static partial class DomainExtensions
+{
+    extension(IQueryable<Joueur> joueurs)
+    {
+        public Task<Joueur?> ByPseudo(string pseudonyme) => joueurs.FirstOrDefaultAsync(_ => _.Pseudonyme == pseudonyme);
+        public IQueryable<Joueur> WherePseudo(string pseudonyme) => joueurs.Where(_ => _.Pseudonyme == pseudonyme);
     }
 }

@@ -5,7 +5,7 @@
 @rendermode InteractiveServer
 @attribute [Authorize]
 
-@inject PersonnelsDbContext PersonnelsDbContext
+@inject IDbContextFactory<PersonnelsDbContext> DbContextFactory
 @inject ILogger<Competences> Logger
 
 <h1>Compétences</h1>
@@ -51,24 +51,22 @@
 
   protected override async Task OnInitializedAsync()
   {
-    joueurs = await PersonnelsDbContext.Joueurs.AsNoTracking().ToArrayAsync(CancellationToken.None);
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    joueurs = await context.Joueurs.AsNoTracking().ToArrayAsync(CancellationToken.None);
   }
 
   private async Task Ajouter(MouseEventArgs args)
   {
-    var competence = PersonnelsDbContext.Joueurs.Add(new()
-    {
-      Pseudonyme = add_name,
-    }).Entity;
-    await PersonnelsDbContext.SaveChangesAsync(CancellationToken.None);
-    joueurs = [.. joueurs, competence];
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    var joueur = context.Joueurs.Add(Domain.Joueur.Factory(add_name)).Entity;
+    await context.SaveChangesAsync(CancellationToken.None);
+    joueurs = [.. joueurs, joueur];
   }
 
-  private async Task Supprimer(Domain.Joueur competence)
+  private async Task Supprimer(Domain.Joueur joueur)
   {
-    await PersonnelsDbContext.Joueurs
-      .Where(_ => _.Pseudonyme == competence.Pseudonyme)
-      .ExecuteDeleteAsync(CancellationToken.None);
-    joueurs = joueurs.Except([competence]).ToArray();
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    await context.Joueurs.WherePseudo(joueur.Pseudonyme).ExecuteDeleteAsync();
+    joueurs = joueurs.Except([joueur]).ToArray();
   }
 }

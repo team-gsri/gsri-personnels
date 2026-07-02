@@ -5,7 +5,7 @@
 @rendermode InteractiveServer
 @attribute [Authorize]
 
-@inject PersonnelsDbContext PersonnelsDbContext
+@inject IDbContextFactory<PersonnelsDbContext> DbContextFactory
 @inject ILogger<Competences> Logger
 
 <h1>Compétences</h1>
@@ -63,17 +63,15 @@
 
   protected override async Task OnInitializedAsync()
   {
-    competences = await PersonnelsDbContext.Competences.AsNoTracking().ToArrayAsync(CancellationToken.None);
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    competences = await context.Competences.AsNoTracking().ToArrayAsync(CancellationToken.None);
   }
 
   private async Task Ajouter(MouseEventArgs args)
   {
-    var competence = PersonnelsDbContext.Competences.Add(new()
-    {
-      Name = add_name,
-      Duree = Duree.Factory(add_duree) ?? throw new InvalidOperationException()
-    }).Entity;
-    await PersonnelsDbContext.SaveChangesAsync(CancellationToken.None);
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    var competence = context.Competences.Add(Domain.Competence.Factory(add_name, add_duree)).Entity;
+    await context.SaveChangesAsync(CancellationToken.None);
     competences = [.. competences, competence];
     add_name = string.Empty;
     await add_name_ref.FocusAsync(preventScroll: false);
@@ -81,7 +79,8 @@
 
   private async Task Supprimer(Domain.Competence competence)
   {
-    await PersonnelsDbContext.Competences.Where(_ => _.Name == competence.Name).ExecuteDeleteAsync(CancellationToken.None);
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    await context.Competences.WhereName(competence.Name).ExecuteDeleteAsync(CancellationToken.None);
     competences = competences.Except([competence]).ToArray();
   }
 }

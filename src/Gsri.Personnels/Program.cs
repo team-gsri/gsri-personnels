@@ -4,7 +4,7 @@ using Gsri.Personnels.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-builder.Services.AddDbContext<PersonnelsDbContext>();
+builder.Services.AddDbContextFactory<PersonnelsDbContext>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.AddSecurity();
 

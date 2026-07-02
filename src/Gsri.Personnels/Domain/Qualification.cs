@@ -44,3 +44,12 @@ public record Qualification
         }
     }
 }
+
+public static partial class DomainExtensions
+{
+    extension(IQueryable<Qualification> qualifications)
+    {
+        public Task<Qualification?> ByKey(Guid key) => qualifications.FirstOrDefaultAsync(_ => _.Key == key);
+        public IQueryable<Qualification> WhereKey(Guid key) => qualifications.Where(_ => _.Key == key);
+    }
+}

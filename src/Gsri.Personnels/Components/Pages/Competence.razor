@@ -5,7 +5,7 @@
 @rendermode InteractiveServer
 @attribute [Authorize]
 
-@inject PersonnelsDbContext PersonnelsDbContext
+@inject IDbContextFactory<PersonnelsDbContext> DbContextFactory
 @inject TimeProvider TimeProvider
 
 <h1>@Name</h1>
@@ -27,7 +27,9 @@
           <a href="/joueurs/@joueur.Pseudonyme">@joueur.Pseudonyme</a>
         </td>
         <td>
-          @if (@GetQualification(joueur)?.IsValid(TimeProvider) ?? false)
+          @if (competence.Qualifications
+            .Where(_ => _.Joueur.Pseudonyme == joueur.Pseudonyme)
+            .Any(_ => _.IsValid(TimeProvider)))
           {
             <b>🎖️ Qualifié</b>
           }
@@ -37,7 +39,10 @@
           }
         </td>
         <td>
-          @GetQualification(joueur)?.Until
+          @(competence.Qualifications
+            .Where(_ => _.Joueur.Pseudonyme == joueur.Pseudonyme)
+            .OrderByDescending(_ => _.Until)
+            .FirstOrDefault()?.Until)
         </td>
         <td>
           <input type="button" class="btn btn-primary" value="Qualifier" @onclick="async () => await Qualifier(joueur)" />
@@ -53,7 +58,8 @@
   <thead>
     <tr>
       <th class="col-3">Date</th>
-      <th class="col-6">Joueur</th>
+      <th class="col-3">Joueur</th>
+      <th class="col-3">Expiration</th>
       <th></th>
     </tr>
   </thead>
@@ -66,6 +72,9 @@
         </td>
         <td>
           @qualification.Joueur.Pseudonyme
+        </td>
+        <td>
+          @qualification.Until
         </td>
         <td>
           <input type="button" class="btn btn-danger" value="Supprimer"
@@ -86,29 +95,34 @@
 
   protected override async Task OnInitializedAsync()
   {
-    competence = await PersonnelsDbContext.Competences
-      .Include(_ => _.Qualifications)
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+
+    competence = await context.Competences.AsNoTracking()
+      .Include("Qualifications.Joueur")
       .FirstAsync(_ => _.Name == Name);
 
-    joueurs = await PersonnelsDbContext.Joueurs
+    joueurs = await context.Joueurs.AsNoTracking()
       .ToArrayAsync(CancellationToken.None);
   }
 
-  private Qualification? GetQualification(Domain.Joueur joueur) => joueur.Qualifications
-    .Where(_ => _.Competence.Name == competence.Name)
-    .MaxBy(_ => _.Until);
-
   private async Task Qualifier(Domain.Joueur joueur)
   {
-    joueur.Qualifier(competence, TimeProvider);
-    await PersonnelsDbContext.SaveChangesAsync(CancellationToken.None);
-    StateHasChanged();
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    if (await context.Competences.ByName(competence.Name) is not Domain.Competence _competence
+    || await context.Joueurs.ByPseudo(joueur.Pseudonyme) is not Domain.Joueur _joueur)
+    {
+      return;
+    }
+
+    _joueur.Qualifier(_competence, TimeProvider);
+    await context.SaveChangesAsync(CancellationToken.None);
+    competence = _competence;
   }
 
   private async Task Supprimer(Qualification qualification)
   {
-    PersonnelsDbContext.Qualifications.Remove(qualification);
-    await PersonnelsDbContext.SaveChangesAsync(CancellationToken.None);
-    StateHasChanged();
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    await context.Qualifications.WhereKey(qualification.Key).ExecuteDeleteAsync();
+    competence.Qualifications.Remove(qualification);
   }
 }
