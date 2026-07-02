@@ -29,7 +29,6 @@ internal static class SecurityConfiguration
         internal void AddAuthorization(AuthorizationOptions options)
         {
             options.AddPolicy(ReadWritePolicyName, webApplicationBuilder.ReadWritePolicy);
-            options.DefaultPolicy = options.GetPolicy(ReadWritePolicyName)!;
         }
 
         internal void ReadWritePolicy(AuthorizationPolicyBuilder authorizationPolicyBuilder)
