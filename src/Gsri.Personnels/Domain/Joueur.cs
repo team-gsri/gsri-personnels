@@ -26,7 +26,7 @@ public record Joueur
         .Where(_ => _.IsValid(timeProvider))
         .MaxBy(_ => _.Until);
 
-    private class EntityTypeConfiguration : IEntityTypeConfiguration<Joueur>
+    private sealed class EntityTypeConfiguration : IEntityTypeConfiguration<Joueur>
     {
         public void Configure(EntityTypeBuilder<Joueur> builder)
         {

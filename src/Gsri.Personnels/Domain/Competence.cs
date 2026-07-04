@@ -12,7 +12,7 @@ public record Competence
     public static Competence? Factory(string? name, int? duree)
     => (name, Duree.Factory(duree)) is (not null and not "", not null) result ? new() { Name = name, Duree = result.Item2 } : null;
 
-    private class EntityTypeConfiguration : IEntityTypeConfiguration<Competence>
+    private sealed class EntityTypeConfiguration : IEntityTypeConfiguration<Competence>
     {
         public void Configure(EntityTypeBuilder<Competence> builder)
         {
