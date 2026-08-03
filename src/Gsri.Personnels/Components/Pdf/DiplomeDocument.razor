@@ -1,0 +1,93 @@
+@using System.Globalization
+@using Gsri.Personnels.Domain
+@using Gsri.Personnels.Pdf
+@inject TimeProvider TimeProvider
+
+<html>
+
+<head>
+  <style>
+      body {
+        margin: 0;
+        padding: 30px;
+        font-family: '@DiplomeFontResolver.FontFamily';
+        font-size: 16px;
+        color: #235;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .frame {
+        border: 3px solid #811;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .frame-inner {
+        border: 1px solid #833;
+        padding: 85px 60px;
+      }
+
+      .title {
+        font-size: 42px;
+        font-weight: bold;
+        margin: 0 0 0.5em 0;
+        color: #833;
+      }
+
+      .pseudo {
+        font-size: 42px;
+        font-weight: bold;
+        margin: 0.25em 0;
+        border-bottom: 1px dotted #88A;
+      }
+
+      .competence {
+        font-size: 42px;
+        font-weight: bold;
+        margin: 0.25em 0;
+        border-bottom: 1px dotted #88A;
+      }
+
+      .dates {
+        font-weight: bold;
+      }
+
+      .signature {
+        margin: 1em 0 0 15em;
+      }
+  </style>
+</head>
+
+<body>
+  <div class="frame">
+    <div class="frame-inner">
+      <div class="title">QUALIFICATION OPERATIONNELLE</div>
+      <div>Le Groupe Spécial de Reconnaissance et d'Intervention (GSRI) certifie que</div>
+      <div class="pseudo">@Qualification.Joueur.Pseudonyme</div>
+      <div>a été reconnu(e) apte à assurer les fonctions de</div>
+      <div class="competence">@Qualification.Competence.Name</div>
+      <div>
+        <p>du <span class="dates">@Qualification.From.ToString("D", CultureInfo)</span></p>
+        <p>au <span class="dates">@Qualification.Until.ToString("D", CultureInfo)</span>.</p>
+      </div>
+      <div class="signature">
+        <p>Fait le @Today.ToString("D", CultureInfo)</p>
+        <p>- Le chef de groupe -</p>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
+
+@code
+{
+  [Parameter] public Qualification Qualification { get; set; } = null!;
+
+  [Parameter] public CultureInfo CultureInfo { get; set; } = new("fr-FR");
+
+  private DateOnly Today => DateOnly.FromDateTime(TimeProvider.GetLocalNow().Date);
+}

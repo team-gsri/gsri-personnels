@@ -65,6 +65,7 @@
       <th class="col-3">Compétence</th>
       <th class="col-3">Expiration</th>
       <th></th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
@@ -79,6 +80,11 @@
         </td>
         <td>
           @qualification.Until
+        </td>
+        <td>
+          <a class="btn btn-outline-primary" href="/qualifications/@qualification.Key/diplome.pdf" target="_blank">
+            🎓 Diplôme
+          </a>
         </td>
         <td>
           <input type="button" class="btn btn-danger" value="Supprimer"
