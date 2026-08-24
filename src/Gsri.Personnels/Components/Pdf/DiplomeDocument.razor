@@ -1,4 +1,6 @@
 @using System.Globalization
+@using System.Reflection
+@using System.Security.Cryptography
 @using Gsri.Personnels.Domain
 @using Gsri.Personnels.Pdf
 @inject TimeProvider TimeProvider
@@ -27,7 +29,7 @@
 
       .frame-inner {
         border: 1px solid #833;
-        padding: 85px 60px;
+        padding: 30px 60px 30px 60px;
       }
 
       .title {
@@ -56,7 +58,31 @@
       }
 
       .signature {
-        margin: 1em 0 0 15em;
+        margin: 1em 0 0 25em;
+      }
+
+      .logo {
+        height: 127px;
+      }
+
+      .tampon {
+        height: 30px;
+      }
+
+      table {
+        margin-top: 1em;
+        margin-bottom: 60px;
+        width: 100%;
+      }
+
+      td {
+        width: 50%;
+        vertical-align: top;
+      }
+
+      .key {
+        font-size: smaller;
+        color: #88A;
       }
   </style>
 </head>
@@ -64,19 +90,32 @@
 <body>
   <div class="frame">
     <div class="frame-inner">
+      <p class="key">@Qualification.Key.ToString().ToUpperInvariant()</p>
       <div class="title">QUALIFICATION OPERATIONNELLE</div>
-      <div>Le Groupe Spécial de Reconnaissance et d'Intervention (GSRI) certifie que</div>
-      <div class="pseudo">@Qualification.Joueur.Pseudonyme</div>
+      <div>Le premier régiment parachutistes d'infanterie de marine certifie que</div>
+      <div class="pseudo">
+        @Qualification.Joueur.Pseudonyme
+      </div>
       <div>a été reconnu(e) apte à assurer les fonctions de</div>
-      <div class="competence">@Qualification.Competence.Name</div>
+      <div class="competence">
+        @Qualification.Competence.Name
+      </div>
       <div>
+        <img src="data:image/png;base64,@ImageTampon" class="tampon" />
         <p>du <span class="dates">@Qualification.From.ToString("D", CultureInfo)</span></p>
         <p>au <span class="dates">@Qualification.Until.ToString("D", CultureInfo)</span>.</p>
       </div>
-      <div class="signature">
-        <p>Fait le @Today.ToString("D", CultureInfo)</p>
-        <p>- Le chef de groupe -</p>
-      </div>
+      <table>
+        <tr>
+          <td>
+            <p>Le candidat</p>
+          </td>
+          <td>
+            <p>Fait le @Today.ToString("D", CultureInfo)</p>
+            <p>Le chef de groupe</p>
+          </td>
+        </tr>
+      </table>
     </div>
   </div>
 </body>
@@ -90,4 +129,26 @@
   [Parameter] public CultureInfo CultureInfo { get; set; } = new("fr-FR");
 
   private DateOnly Today => DateOnly.FromDateTime(TimeProvider.GetLocalNow().Date);
+  private string ImageQualife = string.Empty;
+  private string ImagePerime = string.Empty;
+  private string ImageLogoMin = string.Empty;
+  private string ImageLogoCos = string.Empty;
+  private string ImageLogoUnite = string.Empty;
+  private string ImageTampon => Qualification.IsValid(TimeProvider) ? ImageQualife : ImagePerime;
+
+  protected override async Task OnInitializedAsync()
+  {
+    ImageQualife = await GetImageQualife("qualifie.png");
+    ImagePerime = await GetImageQualife("perime.png");
+  }
+
+  private async Task<string> GetImageQualife(string resource)
+  {
+    var name = Assembly.GetExecutingAssembly().GetManifestResourceNames().Single(_ => _.EndsWith(resource));
+    using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name)
+      ?? throw new InvalidOperationException();
+    using var memory = new CryptoStream(stream, new ToBase64Transform(), CryptoStreamMode.Read);
+    using var reader = new StreamReader(memory);
+    return await reader.ReadToEndAsync();
+  }
 }

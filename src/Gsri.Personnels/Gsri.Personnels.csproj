@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Fonts\*.ttf" />
+    <EmbeddedResource Include="Images\*.png" />
   </ItemGroup>
 
   <ItemGroup>
