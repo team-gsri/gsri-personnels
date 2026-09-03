@@ -3,6 +3,7 @@ using System;
 using Gsri.Personnels.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gsri.Personnels.Database.Migrations
 {
     [DbContext(typeof(PersonnelsDbContext))]
-    partial class PersonnelsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260818045955_Operations")]
+    partial class Operations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.11");

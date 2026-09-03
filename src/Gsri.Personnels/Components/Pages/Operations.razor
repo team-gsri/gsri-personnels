@@ -1,0 +1,77 @@
+@page "/operations"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+@using System.Globalization
+
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@inject IDbContextFactory<PersonnelsDbContext> DbContextFactory
+@inject ILogger<Competences> Logger
+@inject TimeProvider TimeProvider
+
+<h1>Opérations</h1>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th class="col-9">Date</th>
+      <th class="col-3"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var operation in operations.OrderByDescending(_ => _.When))
+    {
+      <tr>
+        <td>
+          <a href="./operations/@operation.When.ToString("yyyy-MM-dd")">
+            @operation.When.ToString("D", cultureInfo)
+          </a>
+        </td>
+        <td>
+          <input type="button" class="btn btn-danger" value="Supprimer"
+                 @onclick="async () => await Supprimer(operation)" />
+        </td>
+      </tr>
+    }
+  </tbody>
+  <tfoot>
+    <tr>
+      <td>
+        <InputDate TValue="DateOnly" @bind-Value="add_when" class="form-control" />
+      </td>
+      <td>
+        <input type="button" class="btn btn-primary" value="Ajouter" @onclick="Ajouter" />
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+@code
+{
+  private CultureInfo cultureInfo = new("fr-FR");
+  private Domain.Operation[] operations = [];
+  private DateOnly add_when = DateOnly.MinValue;
+
+  protected override async Task OnInitializedAsync()
+  {
+    add_when = DateOnly.FromDateTime(TimeProvider.GetLocalNow().Date);
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    operations = await context.Operations.AsNoTracking().ToArrayAsync(CancellationToken.None);
+  }
+
+  private async Task Ajouter(MouseEventArgs args)
+  {
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    var operation = context.Operations.Add(Domain.Operation.Factory(add_when)).Entity;
+    await context.SaveChangesAsync(CancellationToken.None);
+    operations = [.. operations, operation];
+  }
+
+  private async Task Supprimer(Domain.Operation operation)
+  {
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    await context.Operations.WhereWhen(operation.When).ExecuteDeleteAsync();
+    operations = operations.Except([operation]).ToArray();
+  }
+}

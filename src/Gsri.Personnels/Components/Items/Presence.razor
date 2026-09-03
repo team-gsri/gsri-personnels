@@ -1,0 +1,74 @@
+@inject IDbContextFactory<PersonnelsDbContext> DbContextFactory
+
+<tr>
+  <td>
+    <a href="/joueurs/@Pseudonyme">
+      @Pseudonyme
+    </a>
+  </td>
+  <td>
+    <a href="/operations/@When">
+      @When
+    </a>
+  </td>
+  <td>
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" checked="@present" id="checkNativeSwitch" @oninput="SetPresence"
+             switch>
+    </div>
+  </td>
+  <td></td>
+</tr>
+
+@code
+{
+  private bool present = false;
+
+  [Parameter] public string When { get; set; } = string.Empty;
+
+  [Parameter] public string Pseudonyme { get; set; } = string.Empty;
+
+  protected override async Task OnInitializedAsync()
+  {
+    using var context = await DbContextFactory.CreateDbContextAsync(CancellationToken.None);
+    present = await context.Participations
+      .Where(_ => _.Joueur.Pseudonyme == Pseudonyme)
+      .Where(_ => _.Operation.When == DateOnly.Parse(When))
+      .AnyAsync(CancellationToken.None);
+  }
+
+  private async Task SetPresence(ChangeEventArgs args)
+  {
+    if (args.Value switch
+    {
+      true => InsertPresence,
+      false => DeletePresence,
+      _ => null as Func<CancellationToken, Task>
+    } is not Func<CancellationToken, Task> handler) { return; }
+    await handler.Invoke(CancellationToken.None);
+  }
+
+  private async Task DeletePresence(CancellationToken cancellationToken)
+  {
+    using var context = await DbContextFactory.CreateDbContextAsync(cancellationToken);
+    await context.Participations
+      .Where(_ => _.Joueur.Pseudonyme == Pseudonyme)
+      .Where(_ => _.Operation.When == DateOnly.Parse(When))
+      .ExecuteDeleteAsync(cancellationToken);
+  }
+
+  private async Task InsertPresence(CancellationToken cancellationToken)
+  {
+    using var context = await DbContextFactory.CreateDbContextAsync(cancellationToken);
+    if (
+      await context.Joueurs.FirstOrDefaultAsync(_ => _.Pseudonyme == Pseudonyme) is not Joueur joueur ||
+      await context.Operations.FirstOrDefaultAsync(_ => _.When == DateOnly.Parse(When)) is not Operation operation)
+    {
+      return;
+    }
+
+    context.Participations.Add(Participation.Factory(joueur, operation));
+    await context.SaveChangesAsync(cancellationToken);
+  }
+
+}

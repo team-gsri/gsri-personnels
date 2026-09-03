@@ -7,6 +7,7 @@ public record Joueur
 {
     public required string Pseudonyme { get; init; }
     public ICollection<Qualification> Qualifications { get; init; } = [];
+    public ICollection<Participation> Participations { get; init; } = [];
 
     public static Joueur? Factory(string pseudonyme) => new() { Pseudonyme = pseudonyme, Qualifications = [] };
 

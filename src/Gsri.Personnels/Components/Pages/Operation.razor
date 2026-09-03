@@ -1,0 +1,49 @@
+@page "/operations/{When}"
+@using Gsri.Personnels.Components.Items
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@inject IDbContextFactory<PersonnelsDbContext> DbContextFactory
+@inject TimeProvider TimeProvider
+
+<h1>@When</h1>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th class="col-3">Joueur</th>
+      <th class="col-3">Opération</th>
+      <th class="col-3">Présence</th>
+      <th class="col-6"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var joueur in joueurs)
+    {
+      <Presence Pseudonyme="@joueur.Pseudonyme" When="@When" />
+    }
+  </tbody>
+</table>
+
+@code
+{
+  [Parameter] public string When { get; set; } = string.Empty;
+
+  private Domain.Joueur[] joueurs = [];
+
+  protected override async Task OnInitializedAsync()
+  {
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+
+    joueurs = await context.Joueurs.AsNoTracking()
+      .ToArrayAsync(CancellationToken.None);
+  }
+
+  private async Task SetPresence(ChangeEventArgs args)
+  {
+
+  }
+}

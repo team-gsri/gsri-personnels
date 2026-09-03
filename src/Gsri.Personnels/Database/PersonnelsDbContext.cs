@@ -9,6 +9,8 @@ public class PersonnelsDbContext(DbContextOptions options, IConfiguration config
     public DbSet<Joueur> Joueurs { get; set; }
     public DbSet<Competence> Competences { get; set; }
     public DbSet<Qualification> Qualifications { get; set; }
+    public DbSet<Participation> Participations { get; set; }
+    public DbSet<Operation> Operations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     => modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
