@@ -1,4 +1,11 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">
             Personnels GSRI
@@ -9,16 +16,10 @@
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
+    <nav class="nav flex-column h-100">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="competences">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Compétences
             </NavLink>
         </div>
 
@@ -33,6 +34,38 @@
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Opérations
             </NavLink>
         </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="competences">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Compétences
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3 mt-auto">
+            <span> Bonjour @username </span>
+        </div>
+        
+
+        <div class="nav-item px-3">
+            Version @System.Reflection.Assembly.GetEntryAssembly()!.GetName().Version!.ToString(3)
+        </div>
     </nav>
 </div>
 
+
+@code
+{
+    private string username = string.Empty;
+    private Dictionary<string, object> fieldsetAttributes = [];
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        username = state.User.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty;
+        fieldsetAttributes = await AuthorizationService
+            .AuthorizeAsync(state.User, SecurityConfiguration.ReadWritePolicyName) switch
+        {
+            { Succeeded: true } => [],
+            _ => new() { { "disabled", "disabled" } }
+        };
+    }
+}

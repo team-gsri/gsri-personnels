@@ -2,8 +2,9 @@ html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-a, .btn-link {
-    color: #006bb7;
+.dashboard-card {
+    background: #2b3035;
+    border: 1px solid #3d444b;
 }
 
 .btn-primary {
