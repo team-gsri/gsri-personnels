@@ -8,12 +8,14 @@
 @inject IDbContextFactory<PersonnelsDbContext> DbContextFactory
 @inject ILogger<Competences> Logger
 
-<h1>Compétences</h1>
+<h1>Joueurs</h1>
 
 <table class="table">
   <thead>
     <tr>
-      <th class="col-9">Pseudonyme</th>
+      <th class="col-3">Pseudonyme</th>
+      <th class="col-3"></th>
+      <th class="col-3">Dernière présence</th>
       <th class="col-3"></th>
     </tr>
   </thead>
@@ -27,6 +29,20 @@
           </a>
         </td>
         <td>
+        </td>
+        <td>
+          @if (joueur.Participations
+            .OrderByDescending(_ => _.Operation.When)
+            .FirstOrDefault() is Participation participation)
+          {
+            @participation.Operation.When.ToShortDateString()
+          }
+          else
+          {
+            <span>-</span>
+          }
+        </td>
+        <td>
           <input type="button" class="btn btn-danger" value="Supprimer" @onclick="async () => await Supprimer(joueur)" />
         </td>
       </tr>
@@ -34,7 +50,7 @@
   </tbody>
   <tfoot>
     <tr>
-      <td>
+      <td colspan="3">
         <input type="text" class="form-control" @bind-value="add_name" />
       </td>
       <td>
@@ -52,7 +68,9 @@
   protected override async Task OnInitializedAsync()
   {
     await using var context = await DbContextFactory.CreateDbContextAsync();
-    joueurs = await context.Joueurs.AsNoTracking().ToArrayAsync(CancellationToken.None);
+    joueurs = await context.Joueurs.AsNoTracking()
+      .Include("Participations.Operation")
+      .ToArrayAsync(CancellationToken.None);
   }
 
   private async Task Ajouter(MouseEventArgs args)
