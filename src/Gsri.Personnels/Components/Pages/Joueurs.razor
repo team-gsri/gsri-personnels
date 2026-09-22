@@ -1,6 +1,6 @@
 @page "/joueurs"
-@using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
 
 @rendermode InteractiveServer
 @attribute [Authorize]
@@ -35,7 +35,7 @@
             .OrderByDescending(_ => _.Operation.When)
             .FirstOrDefault() is Participation participation)
           {
-            @participation.Operation.When.ToShortDateString()
+            @participation.Operation.When.ToString("yyyy-MM-dd")
           }
           else
           {
