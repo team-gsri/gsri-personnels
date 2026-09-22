@@ -108,7 +108,7 @@
     </tr>
   </thead>
   <tbody>
-    @foreach (var operation in operations)
+    @foreach (var operation in operations.OrderByDescending(_ => _.When))
     {
       <Presence Pseudonyme="@Pseudonyme" When="@operation.When.ToString("yyyy-MM-dd")" />
     }

@@ -21,7 +21,7 @@
     </tr>
   </thead>
   <tbody>
-    @foreach (var joueur in joueurs)
+    @foreach (var joueur in joueurs.OrderBy(_=>_.Pseudonyme))
     {
       <Presence Pseudonyme="@joueur.Pseudonyme" When="@When" />
     }
