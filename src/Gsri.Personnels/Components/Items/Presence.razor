@@ -1,4 +1,6 @@
+@using Gsri.Personnels.RaidHelper
 @inject IDbContextFactory<PersonnelsDbContext> DbContextFactory
+@inject IHttpClientFactory HttpClientFactory
 
 <tr>
   <td>
@@ -17,12 +19,16 @@
              switch>
     </div>
   </td>
-  <td></td>
+  <td>
+    @inscrit
+  </td>
 </tr>
 
 @code
 {
   private bool present = false;
+
+  private string inscrit = string.Empty;
 
   [Parameter] public string When { get; set; } = string.Empty;
 
@@ -35,6 +41,32 @@
       .Where(_ => _.Joueur.Pseudonyme == Pseudonyme)
       .Where(_ => _.Operation.When == DateOnly.Parse(When))
       .AnyAsync(CancellationToken.None);
+
+    var raidHelperId = await context.Operations
+      .Where(_ => _.When == DateOnly.Parse(When))
+      .FirstOrDefaultAsync(CancellationToken.None)
+      is Operation operation ? operation.RaidHelperId : null;
+
+    var discordId = await context.Joueurs
+      .Where(_ => _.Pseudonyme == Pseudonyme)
+      .FirstOrDefaultAsync(CancellationToken.None)
+      is Joueur joueur ? joueur.DiscordId : null;
+
+    inscrit = await GetInscription(raidHelperId, discordId, CancellationToken.None);
+  }
+
+  private async Task<string> GetInscription(
+    RaidHelperId? raidHelperId,
+    DiscordId? discordId,
+    CancellationToken cancellationToken)
+  {
+    if (raidHelperId is null || discordId is null) { return string.Empty; }
+    using var client = HttpClientFactory.CreateClient();
+    return await client.GetFromJsonAsync<Event>(
+      $"https://raid-helper.xyz/api/v4/events/{raidHelperId.Value}",
+      cancellationToken) is Event e
+      && e.SignUps.Any(_ => DiscordId.Factory(_.UserId) == discordId)
+      ? "✅" : "🟥";
   }
 
   private async Task SetPresence(ChangeEventArgs args)

@@ -6,6 +6,7 @@ namespace Gsri.Personnels.Domain;
 public record Operation
 {
     public DateOnly When { get; init; }
+    public RaidHelperId? RaidHelperId { get; set; }
     public ICollection<Participation> Participations { get; init; } = [];
 
     public static Operation? Factory(DateOnly when) => new() { When = when };
@@ -18,6 +19,10 @@ public record Operation
             builder.HasKey("Id");
 
             builder.HasIndex(_ => _.When).IsUnique();
+            builder.Property(_ => _.RaidHelperId).HasConversion(
+                value => value.Value,
+                value => RaidHelperId.Factory(value)
+            );
         }
     }
 }

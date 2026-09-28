@@ -14,6 +14,7 @@ builder.Services.AddDbContextFactory<PersonnelsDbContext>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<Microsoft.AspNetCore.Components.Web.HtmlRenderer>();
 builder.Services.AddScoped<DiplomeService>();
+builder.Services.AddHttpClient();
 builder.AddSecurity();
 
 GlobalFontSettings.FontResolver = new DiplomeFontResolver();
@@ -53,7 +54,7 @@ app.MapGet(
     var disposition = $@"inline; filename=""{filename}""";
     httpContext.Response.Headers.ContentDisposition = disposition;
     return Results.File(pdf, "application/pdf");
-    
+
 }).RequireAuthorization();
 
 await app.RunAsync();

@@ -11,13 +11,31 @@
 
 <h1>@When</h1>
 
+<form class="row g-2 mb-3" @onsubmit="ModifierRaidHelperId">
+  <div class="col-auto">
+    <label class="col-form-label" for="raid-helper-id">Raid-Helper ID</label>
+  </div>
+  <div class="col-auto">
+    <input id="raid-helper-id" type="text" inputmode="numeric" class="form-control" @bind-value="raid_helper_id" />
+  </div>
+  <div class="col-auto">
+    <input type="submit" class="btn btn-primary" value="Enregistrer" />
+  </div>
+  @if (raid_helper_id_error is not null)
+  {
+    <div class="col-auto">
+      <span class="form-text text-danger">@raid_helper_id_error</span>
+    </div>
+  }
+</form>
+
 <table class="table">
   <thead>
     <tr>
       <th class="col-3">Joueur</th>
       <th class="col-3">Opération</th>
       <th class="col-3">Présence</th>
-      <th class="col-6"></th>
+      <th class="col-3">Inscrit</th>
     </tr>
   </thead>
   <tbody>
@@ -33,6 +51,8 @@
   [Parameter] public string When { get; set; } = string.Empty;
 
   private Domain.Joueur[] joueurs = [];
+  private string? raid_helper_id;
+  private string? raid_helper_id_error;
 
   protected override async Task OnInitializedAsync()
   {
@@ -40,6 +60,29 @@
 
     joueurs = await context.Joueurs.AsNoTracking()
       .ToArrayAsync(CancellationToken.None);
+
+    var operation = await context.Operations.AsNoTracking().ByWhen(DateOnly.Parse(When));
+    raid_helper_id = operation?.RaidHelperId?.Value.ToString();
+  }
+
+  private async Task ModifierRaidHelperId()
+  {
+    Domain.RaidHelperId? value = null;
+    if (!string.IsNullOrWhiteSpace(raid_helper_id) && !Domain.RaidHelperId.TryParse(raid_helper_id.Trim(), out value))
+    {
+      raid_helper_id_error = "Raid-Helper ID invalide";
+      return;
+    }
+
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    if (await context.Operations.ByWhen(DateOnly.Parse(When)) is not Domain.Operation operation)
+    {
+      return;
+    }
+
+    operation.RaidHelperId = value;
+    await context.SaveChangesAsync(CancellationToken.None);
+    raid_helper_id_error = null;
   }
 
   private async Task SetPresence(ChangeEventArgs args)

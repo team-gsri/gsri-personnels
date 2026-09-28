@@ -6,6 +6,7 @@ namespace Gsri.Personnels.Domain;
 public record Joueur
 {
     public required string Pseudonyme { get; init; }
+    public DiscordId? DiscordId { get; set; }
     public ICollection<Qualification> Qualifications { get; init; } = [];
     public ICollection<Participation> Participations { get; init; } = [];
 
@@ -35,6 +36,10 @@ public record Joueur
             builder.HasKey("Id");
 
             builder.HasIndex(_ => _.Pseudonyme).IsUnique();
+            builder.Property(_ => _.DiscordId).HasConversion(
+                value => value.Value,
+                value => DiscordId.Factory(value)
+            );
         }
     }
 }

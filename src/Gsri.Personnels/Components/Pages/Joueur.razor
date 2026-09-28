@@ -11,6 +11,24 @@
 
 <h1>@Pseudonyme</h1>
 
+<form class="row g-2 mb-3" @onsubmit="ModifierDiscordId">
+  <div class="col-auto">
+    <label class="col-form-label" for="discord-id">Discord ID</label>
+  </div>
+  <div class="col-auto">
+    <input id="discord-id" type="text" inputmode="numeric" class="form-control" @bind-value="discord_id" />
+  </div>
+  <div class="col-auto">
+    <input type="submit" class="btn btn-primary" value="Enregistrer" />
+  </div>
+  @if (discord_id_error is not null)
+  {
+    <div class="col-auto">
+      <span class="form-text text-danger">@discord_id_error</span>
+    </div>
+  }
+</form>
+
 <table class="table">
   <thead>
     <tr>
@@ -104,7 +122,7 @@
       <th class="col-3">Joueur</th>
       <th class="col-3">Opération</th>
       <th class="col-3">Présence</th>
-      <th class="col-6"></th>
+      <th class="col-3">Inscrit</th>
     </tr>
   </thead>
   <tbody>
@@ -122,6 +140,8 @@
   private Domain.Joueur joueur = null!;
   private Domain.Competence[] competences = [];
   private Domain.Operation[] operations = [];
+  private string? discord_id;
+  private string? discord_id_error;
 
   protected override async Task OnInitializedAsync()
   {
@@ -130,6 +150,8 @@
     joueur = await context.Joueurs.AsNoTracking()
       .Include("Qualifications.Competence")
       .FirstAsync(_ => _.Pseudonyme == Pseudonyme);
+
+    discord_id = joueur.DiscordId?.Value.ToString();
 
     competences = await context.Competences.AsNoTracking()
       .ToArrayAsync(CancellationToken.None);
@@ -150,6 +172,27 @@
     _joueur.Qualifier(_competence, TimeProvider);
     await context.SaveChangesAsync(CancellationToken.None);
     joueur = _joueur;
+  }
+
+  private async Task ModifierDiscordId()
+  {
+    Domain.DiscordId? value = null;
+    if (!string.IsNullOrWhiteSpace(discord_id) && !Domain.DiscordId.TryParse(discord_id.Trim(), out value))
+    {
+      discord_id_error = "Discord ID invalide";
+      return;
+    }
+
+    await using var context = await DbContextFactory.CreateDbContextAsync();
+    if (await context.Joueurs.ByPseudo(joueur.Pseudonyme) is not Domain.Joueur _joueur)
+    {
+      return;
+    }
+
+    _joueur.DiscordId = value;
+    await context.SaveChangesAsync(CancellationToken.None);
+    joueur.DiscordId = value;
+    discord_id_error = null;
   }
 
   private async Task Supprimer(Domain.Qualification qualification)
