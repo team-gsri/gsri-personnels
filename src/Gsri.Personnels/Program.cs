@@ -3,6 +3,7 @@ using Gsri.Personnels.Components;
 using Gsri.Personnels.Database;
 using Gsri.Personnels.Domain;
 using Gsri.Personnels.Pdf;
+using Gsri.Personnels.RaidHelper;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +15,7 @@ builder.Services.AddDbContextFactory<PersonnelsDbContext>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<Microsoft.AspNetCore.Components.Web.HtmlRenderer>();
 builder.Services.AddScoped<DiplomeService>();
-builder.Services.AddHttpClient();
+EventRepository.Register(builder);
 builder.AddSecurity();
 
 GlobalFontSettings.FontResolver = new DiplomeFontResolver();
