@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.5.4">
+<Project Sdk="Aspire.AppHost.Sdk/13.6.0">
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Gsri.Personnels\Gsri.Personnels.csproj" />
