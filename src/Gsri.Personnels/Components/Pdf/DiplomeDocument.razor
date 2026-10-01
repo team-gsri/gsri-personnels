@@ -11,10 +11,14 @@
   <style>
       body {
         margin: 0;
-        padding: 30px;
-        font-family: '@DiplomeFontResolver.FontFamily';
+        padding: 30pt;
+        font-family: '@DiplomeFonts.FontFamily';
         font-size: 16px;
         color: #235;
+        background-image: url('data:image/jpeg;base64,@((MarkupString)ImageBackground)');
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
       }
 
       p {
@@ -22,14 +26,14 @@
       }
 
       .frame {
-        border: 3px solid #811;
-        padding: 20px;
+        border: 0;
+        padding: 20pt;
         text-align: center;
       }
 
       .frame-inner {
-        border: 1px solid #833;
-        padding: 30px 60px 30px 60px;
+        border: 0;
+        padding: 30pt 60pt 30pt 60pt;
       }
 
       .title {
@@ -43,14 +47,14 @@
         font-size: 42px;
         font-weight: bold;
         margin: 0.25em 0;
-        border-bottom: 1px dotted #88A;
+        border-bottom: 1pt dotted #88A;
       }
 
       .competence {
         font-size: 42px;
         font-weight: bold;
         margin: 0.25em 0;
-        border-bottom: 1px dotted #88A;
+        border-bottom: 1pt dotted #88A;
       }
 
       .dates {
@@ -62,16 +66,16 @@
       }
 
       .logo {
-        height: 127px;
+        height: 127pt;
       }
 
       .tampon {
-        height: 30px;
+        height: 30pt;
       }
 
       table {
         margin-top: 1em;
-        margin-bottom: 60px;
+        margin-bottom: 60pt;
         width: 100%;
       }
 
@@ -90,8 +94,8 @@
 <body>
   <div class="frame">
     <div class="frame-inner">
-      <p class="key">@Qualification.Key.ToString().ToUpperInvariant()</p>
       <div class="title">QUALIFICATION OPERATIONNELLE</div>
+      <p class="key">@Qualification.Key.ToString().ToUpperInvariant()</p>
       <div>Le premier régiment parachutistes d'infanterie de marine certifie que</div>
       <div class="pseudo">
         @Qualification.Joueur.Pseudonyme
@@ -129,6 +133,7 @@
   [Parameter] public CultureInfo CultureInfo { get; set; } = new("fr-FR");
 
   private DateOnly Today => DateOnly.FromDateTime(TimeProvider.GetLocalNow().Date);
+  private string ImageBackground = string.Empty;
   private string ImageQualife = string.Empty;
   private string ImagePerime = string.Empty;
   private string ImageLogoMin = string.Empty;
@@ -138,6 +143,7 @@
 
   protected override async Task OnInitializedAsync()
   {
+    ImageBackground = await GetImageQualife("background.jpg");
     ImageQualife = await GetImageQualife("qualifie.png");
     ImagePerime = await GetImageQualife("perime.png");
   }

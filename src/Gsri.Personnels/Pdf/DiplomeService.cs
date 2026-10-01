@@ -3,9 +3,7 @@ using Gsri.Personnels.Domain;
 
 using Microsoft.AspNetCore.Components;
 
-using PdfSharpCore;
-
-using TheArtOfDev.HtmlRenderer.PdfSharp;
+using PeachPDF;
 
 namespace Gsri.Personnels.Pdf;
 
@@ -30,9 +28,12 @@ public class DiplomeService(Microsoft.AspNetCore.Components.Web.HtmlRenderer htm
         };
         config.SetMargins(0);
 
-        using var document = PdfGenerator.GeneratePdf(html, config);
+        var generator = new PdfGenerator();
+        await generator.AddDiplomeFontsAsync();
+
+        var document = await generator.GeneratePdf(html, config);
         using var stream = new MemoryStream();
-        document.Save(stream, false);
+        document.Save(stream);
         return stream.ToArray();
     }
 }
