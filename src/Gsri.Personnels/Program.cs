@@ -7,8 +7,6 @@ using Gsri.Personnels.RaidHelper;
 
 using Microsoft.EntityFrameworkCore;
 
-using PdfSharpCore.Fonts;
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddDbContextFactory<PersonnelsDbContext>();
@@ -17,8 +15,6 @@ builder.Services.AddScoped<Microsoft.AspNetCore.Components.Web.HtmlRenderer>();
 builder.Services.AddScoped<DiplomeService>();
 EventRepository.Register(builder);
 builder.AddSecurity();
-
-GlobalFontSettings.FontResolver = new DiplomeFontResolver();
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())

@@ -12,6 +12,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Fonts\*.ttf" />
     <EmbeddedResource Include="Images\*.png" />
+    <EmbeddedResource Include="Images\*.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,9 +22,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
-    <PackageReference Include="PdfSharpCore" Version="1.3.67" />
-    <PackageReference Include="Polybioz.HtmlRenderer.PdfSharp.Core" Version="1.1.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.13" />
+    <PackageReference Include="PeachPDF" Version="0.9.20" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
   </ItemGroup>
 
