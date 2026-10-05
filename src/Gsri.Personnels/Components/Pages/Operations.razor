@@ -2,60 +2,48 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Authorization
 @using System.Globalization
+@using Bit.BlazorUI
 
 @rendermode InteractiveServer
 @attribute [Authorize]
 
+@inject NavigationManager NavigationManager
 @inject IDbContextFactory<PersonnelsDbContext> DbContextFactory
 @inject ILogger<Competences> Logger
 @inject TimeProvider TimeProvider
 
 <h1>Opérations</h1>
+<div class="container">
+  
+  <div class="input-group mb-3">
+    <InputDate TValue="DateOnly" @bind-Value="add_when" class="form-control" />
+    <input type="button" class="btn btn-primary" value="Ajouter" @onclick="Ajouter" />
+  </div>
 
-<table class="table">
-  <thead>
-    <tr>
-      <th class="col-6">Date</th>
-      <th class="col-3">Participants</th>
-      <th class="col-3"></th>
-    </tr>
-  </thead>
-  <tbody>
-    @foreach (var operation in operations.OrderByDescending(_ => _.When))
-    {
-      <tr>
-        <td>
-          <a href="./operations/@operation.When.ToString("yyyy-MM-dd")">
-            @operation.When.ToString("D", cultureInfo)
-          </a>
-        </td>
-        <td>
-          @operation.Participations.Count
-        </td>
-        <td>
-          <input type="button" class="btn btn-danger" value="Supprimer"
-                 @onclick="async () => await Supprimer(operation)" />
-        </td>
-      </tr>
-    }
-  </tbody>
-  <tfoot>
-    <tr>
-      <td colspan="2">
-        <InputDate TValue="DateOnly" @bind-Value="add_when" class="form-control" />
-      </td>
-      <td>
-        <input type="button" class="btn btn-primary" value="Ajouter" @onclick="Ajouter" />
-      </td>
-    </tr>
-  </tfoot>
-</table>
+  <div class="btn-group mb-3 w-100" role="group">
+    <BitButton Variant="BitVariant.Fill" class="btn" OnClick="() => calendar?.NavigatePrevious()">
+      Précédent
+    </BitButton>
+    <BitButton Variant="BitVariant.Outline" class="btn" OnClick="() => calendar?.GoToToday()">
+      Aujourd'hui
+    </BitButton>
+    <BitButton Variant="BitVariant.Fill" class="btn" OnClick="() => calendar?.NavigateNext()">
+      Suivant
+    </BitButton>
+  </div>
+
+  <BitFullCalendar @ref="calendar" Events="events" ReadOnly=true CultureName="fr-FR" HideHeader=true
+                   OnEventClick="OnEventClick" Class="mb-3" />
+
+</div>
 
 @code
 {
   private CultureInfo cultureInfo = new("fr-FR");
   private Domain.Operation[] operations = [];
   private DateOnly add_when = DateOnly.MinValue;
+  private BitFullCalendar? calendar;
+  public List<BitFullCalendarEvent> events { get; private set; } = [];
 
   protected override async Task OnInitializedAsync()
   {
@@ -64,6 +52,15 @@
     operations = await context.Operations.AsNoTracking()
       .Include(_ => _.Participations)
       .ToArrayAsync(CancellationToken.None);
+
+    events = await context.Operations.AsNoTracking().Select(
+      _ => new BitFullCalendarEvent()
+      {
+        Id = _.When.ToString("yyyy-MM-dd"),
+        Title = $"Participants : {_.Participations.Count}",
+        IsAllDay = true,
+        StartDate = _.When.ToDateTime(new TimeOnly(21, 0)),
+      }).ToListAsync(CancellationToken.None);
   }
 
   private async Task Ajouter(MouseEventArgs args)
@@ -79,5 +76,10 @@
     await using var context = await DbContextFactory.CreateDbContextAsync();
     await context.Operations.WhereWhen(operation.When).ExecuteDeleteAsync();
     operations = operations.Except([operation]).ToArray();
+  }
+
+  private void OnEventClick(BitFullCalendarEvent bitFullCalendarEvent)
+  {
+    NavigationManager.NavigateTo($"/operations/{bitFullCalendarEvent.Id}");
   }
 }

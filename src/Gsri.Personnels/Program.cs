@@ -1,3 +1,5 @@
+using Bit.BlazorUI;
+
 using Gsri.Personnels;
 using Gsri.Personnels.Components;
 using Gsri.Personnels.Database;
@@ -8,6 +10,8 @@ using Gsri.Personnels.RaidHelper;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddBitBlazorUIServices();
+builder.Services.AddBitBlazorUIExtrasServices();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddDbContextFactory<PersonnelsDbContext>();
 builder.Services.AddSingleton(TimeProvider.System);
