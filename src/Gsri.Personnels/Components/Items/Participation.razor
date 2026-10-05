@@ -1,0 +1,63 @@
+@inject IDbContextFactory<PersonnelsDbContext> DbContextFactory
+@inject TimeProvider TimeProvider
+
+<tr>
+  <td colspan="2">
+    <a href="./joueurs/@Pseudonyme">
+      @Pseudonyme
+    </a>
+  </td>
+  <td>
+    @if (Difference is TimeSpan and { TotalDays: > 21 })
+    {
+      <p class="m-0">
+        @participation?.Operation.When.ToString("yyyy-MM-dd")
+      </p>
+      <p class="m-0 small text-bg-warning badge">
+        Il y a @Math.Floor(Difference.Value.TotalDays) jour(s)
+      </p>
+    }
+    else if (Difference is TimeSpan)
+    {
+      <p class="m-0">
+        @participation?.Operation.When.ToString("yyyy-MM-dd")
+      </p>
+      <p class="m-0 small text-secondary">
+        Il y a @Math.Floor(Difference.Value.TotalDays) jour(s)
+      </p>
+    }
+    else
+    {
+      <span>-</span>
+    }
+  </td>
+  <td>
+    <input type="button" class="btn btn-danger" value="Supprimer" @onclick="Supprimer" />
+  </td>
+</tr>
+
+@code
+{
+  [Parameter] public string Pseudonyme { get; set; } = string.Empty;
+  [Parameter] public EventCallback OnListChanged { get; set; }
+  private Domain.Participation? participation;
+  private TimeSpan? Difference => TimeProvider.GetLocalNow() - participation?.Operation.When.ToDateTime(new(0, 0));
+
+  protected override async Task OnInitializedAsync()
+  {
+    using var context = await DbContextFactory.CreateDbContextAsync(CancellationToken.None);
+    participation = await context.Participations.AsNoTracking()
+      .Include(_ => _.Operation)
+      .Where(_ => _.Joueur.Pseudonyme == Pseudonyme)
+      .OrderByDescending(_ => _.Operation.When)
+      .FirstOrDefaultAsync(CancellationToken.None);
+  }
+
+  private async Task Supprimer()
+  {
+    using var context = await DbContextFactory.CreateDbContextAsync(CancellationToken.None);
+    await context.Joueurs.Where(_ => _.Pseudonyme == Pseudonyme).ExecuteDeleteAsync(CancellationToken.None);
+    await OnListChanged.InvokeAsync();
+  }
+
+}

@@ -1,4 +1,5 @@
 @page "/joueurs"
+@using Gsri.Personnels.Components.Items
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 
@@ -22,31 +23,7 @@
   <tbody>
     @foreach (var joueur in joueurs.OrderBy(_ => _.Pseudonyme))
     {
-      <tr>
-        <td>
-          <a href="./joueurs/@joueur.Pseudonyme">
-            @joueur.Pseudonyme
-          </a>
-        </td>
-        <td>
-        </td>
-        <td>
-          @if (joueur.Participations
-            .OrderByDescending(_ => _.Operation.When)
-            .FirstOrDefault() is Participation participation)
-          {
-            @participation.Operation.When.ToString("yyyy-MM-dd")
-            <p class="small text-secondary">Il y a @((DateTime.Today - participation.Operation.When.ToDateTime(new(0,0))).TotalDays) jour(s)</p>
-          }
-          else
-          {
-            <span>-</span>
-          }
-        </td>
-        <td>
-          <input type="button" class="btn btn-danger" value="Supprimer" @onclick="async () => await Supprimer(joueur)" />
-        </td>
-      </tr>
+      <Participation Pseudonyme="@joueur.Pseudonyme" OnListChanged="OnListChanged" />
     }
   </tbody>
   <tfoot>
@@ -82,10 +59,5 @@
     joueurs = [.. joueurs, joueur];
   }
 
-  private async Task Supprimer(Domain.Joueur joueur)
-  {
-    await using var context = await DbContextFactory.CreateDbContextAsync();
-    await context.Joueurs.WherePseudo(joueur.Pseudonyme).ExecuteDeleteAsync();
-    joueurs = joueurs.Except([joueur]).ToArray();
-  }
+  private async Task OnListChanged() => await OnInitializedAsync();
 }

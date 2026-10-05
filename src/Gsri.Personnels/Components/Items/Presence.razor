@@ -85,7 +85,7 @@
       return;
     }
 
-    context.Participations.Add(Participation.Factory(joueur, operation));
+    context.Participations.Add(Domain.Participation.Factory(joueur, operation));
     await context.SaveChangesAsync(cancellationToken);
   }
 
