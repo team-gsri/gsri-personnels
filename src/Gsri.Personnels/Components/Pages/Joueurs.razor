@@ -36,6 +36,7 @@
             .FirstOrDefault() is Participation participation)
           {
             @participation.Operation.When.ToString("yyyy-MM-dd")
+            <p class="small text-secondary">Il y a @((DateTime.Today - participation.Operation.When.ToDateTime(new(0,0))).TotalDays) jour(s)</p>
           }
           else
           {
