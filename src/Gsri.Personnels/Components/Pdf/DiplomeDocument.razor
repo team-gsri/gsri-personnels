@@ -136,9 +136,6 @@
   private string ImageBackground = string.Empty;
   private string ImageQualife = string.Empty;
   private string ImagePerime = string.Empty;
-  private string ImageLogoMin = string.Empty;
-  private string ImageLogoCos = string.Empty;
-  private string ImageLogoUnite = string.Empty;
   private string ImageTampon => Qualification.IsValid(TimeProvider) ? ImageQualife : ImagePerime;
 
   protected override async Task OnInitializedAsync()
@@ -148,7 +145,7 @@
     ImagePerime = await GetImageQualife("perime.png");
   }
 
-  private async Task<string> GetImageQualife(string resource)
+  private static async Task<string> GetImageQualife(string resource)
   {
     var name = Assembly.GetExecutingAssembly().GetManifestResourceNames().Single(_ => _.EndsWith(resource));
     using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name)

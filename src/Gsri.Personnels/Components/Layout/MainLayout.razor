@@ -1,5 +1,4 @@
-﻿@using System.Security.Claims
-@using Microsoft.AspNetCore.Authorization
+﻿@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inherits LayoutComponentBase
@@ -28,12 +27,10 @@
 
 @code
 {
-    private string username = string.Empty;
     private Dictionary<string, object> fieldsetAttributes = [];
     protected override async Task OnInitializedAsync()
     {
         var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        username = state.User.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty;
         fieldsetAttributes = await AuthorizationService
             .AuthorizeAsync(state.User, SecurityConfiguration.ReadWritePolicyName) switch
         {
